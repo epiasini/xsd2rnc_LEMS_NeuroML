@@ -1,0 +1,778 @@
+namespace a = "http://relaxng.org/ns/compatibility/annotations/1.0"
+default namespace ns1 = "http://www.neuroml.org/schema/neuroml2"
+namespace ns_1 = "http://relaxng.org/ns/compatibility/annotations/1.0"
+namespace rng = "http://relaxng.org/ns/structure/1.0"
+namespace xi = "http://www.w3.org/2001/XInclude"
+namespace xsi = "http://www.w3.org/2001/XMLSchema-instance"
+
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+# Core elements
+
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+## 
+##             An id attribute for elements which need to be identified uniquely (normally just within their parent element).
+##         
+NmlId = xsd:string { pattern = "[a-zA-Z0-9_]*" }
+
+## 
+##             A value for a physical quantity in NeuroML 2, e.g. 20, -60.0mV or 5nA
+##         
+Nml2Quantity =
+  xsd:string {
+    pattern = "-?([0-9]*(\.[0-9]+)?)([eE]-?[0-9]+)?[\s]*([_a-zA-Z0-9])*"
+  }
+Nml2Quantity_none =
+  xsd:string { pattern = "-?([0-9]*(\.[0-9]+)?)([eE]-?[0-9]+)?" }
+Nml2Quantity_voltage =
+  xsd:string {
+    pattern = "-?([0-9]*(\.[0-9]+)?)([eE]-?[0-9]+)?[\s]*(V|mV)"
+  }
+Nml2Quantity_length =
+  xsd:string {
+    pattern = "-?([0-9]*(\.[0-9]+)?)([eE]-?[0-9]+)?[\s]*(m|cm|um)"
+  }
+Nml2Quantity_conductance =
+  xsd:string {
+    pattern = "-?([0-9]*(\.[0-9]+)?)([eE]-?[0-9]+)?[\s]*(S|mS|uS|nS|pS)"
+  }
+Nml2Quantity_conductanceDensity =
+  xsd:string {
+    pattern =
+      "-?([0-9]*(\.[0-9]+)?)([eE]-?[0-9]+)?[\s]*(S_per_m2|mS_per_cm2|S_per_cm2)"
+  }
+Nml2Quantity_time =
+  xsd:string {
+    pattern = "-?([0-9]*(\.[0-9]+)?)([eE]-?[0-9]+)?[\s]*(s|ms)"
+  }
+Nml2Quantity_pertime =
+  xsd:string {
+    pattern = "-?([0-9]*(\.[0-9]+)?)([eE]-?[0-9]+)?[\s]*(per_s|per_ms)"
+  }
+Nml2Quantity_capacitance =
+  xsd:string {
+    pattern = "-?([0-9]*(\.[0-9]+)?)([eE]-?[0-9]+)?[\s]*(F|uF|nF|pF)"
+  }
+Nml2Quantity_specificCapacitance =
+  xsd:string {
+    pattern =
+      "-?([0-9]*(\.[0-9]+)?)([eE]-?[0-9]+)?[\s]*(F_per_m2|uF_per_cm2)"
+  }
+Nml2Quantity_concentration =
+  xsd:string {
+    pattern =
+      "-?([0-9]*(\.[0-9]+)?)([eE]-?[0-9]+)?[\s]*(mol_per_m3|mol_per_cm3|M|mM)"
+  }
+Nml2Quantity_current =
+  xsd:string {
+    pattern = "-?([0-9]*(\.[0-9]+)?)([eE]-?[0-9]+)?[\s]*(A|uA|nA|pA)"
+  }
+Nml2Quantity_temperature =
+  xsd:string {
+    pattern = "-?([0-9]*(\.[0-9]+)?)([eE]-?[0-9]+)?[\s]*(degC)"
+  }
+
+## 
+##             An id string for pointing to an entry in an annotation element related to a MIRIAM resource. Based on metaid of SBML
+##         
+MetaId = xsd:string { pattern = "[a-zA-Z0-9_]*" }
+
+## 
+##             An id string for pointing to an entry in the NeuroLex ontology. Use of this attribute is a shorthand for a full
+##             RDF based reference to the MIRIAM Resource urn:miriam:neurolex, with an bqbiol:is qualifier
+##             
+##         
+NeuroLexId = xsd:string { pattern = "[a-zA-Z0-9_]*" }
+
+## 
+##             An id attribute for segments: integer >=0 only!
+##         
+SegmentId = xsd:nonNegativeInteger
+# NOTE: Base and Standalone definitions moved to end of file, as some XML language binding
+# generators, e.g. generateDS.py, require superclasses to be defined after the subclasses...
+
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+# Metadata elements
+
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+## 
+##             Textual human readable notes related to the element in question. It's useful to put these into
+##          the NeuroML files instead of XML comments, as the notes can be extracted and repeated in the files to which the NeuroML is mapped.
+##             
+##         
+Notes = xsd:string
+
+## 
+##             Placeholder for MIRIAM related metadata, among others.
+##         
+Annotation =
+  (element * { text }*)
+  # Further elements will be specified!!
+  
+
+## 
+##             Contains an extension to NeuroML by creating custom LEMS ComponentType.
+##         
+ComponentType =
+  element * { text }*,
+  # Further elements will be specified!!
+  attribute name { xsd:string },
+  attribute extends { xsd:string }?,
+  attribute description { xsd:string }?
+
+## 
+##             Double restricted to between 1 and 0
+##         
+ZeroToOne = xsd:double { minInclusive = "0" maxInclusive = "1" }
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+# Main NeuroML element
+
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+start |= starting_neuroml
+starting_neuroml =
+  element neuroml {
+    NeuroMLDocument
+    >> a:documentation [
+         "\x{a}" ~
+         "            The root NeuroML element.\x{a}" ~
+         "        "
+       ]
+  }
+NeuroMLDocument =
+  [ ns1:text [ ] ] attribute xsi:schemaLocation { text },
+  # Making the complexType definition of the root element lowercase, not to confuse language binding generators...
+  Standalone,
+  element include { IncludeType }*,
+  element extracellularProperties { ExtracellularProperties }*,
+  element intracellularProperties { IntracellularProperties }*,
+  element morphology { Morphology }*,
+  element ionChannel { IonChannel }*,
+  ConcentrationModelTypes,
+  SynapseTypes,
+  element biophysicalProperties { BiophysicalProperties }*,
+  CellTypes,
+  element pulseGenerator { PulseGenerator }*,
+  element network { Network }*,
+  element ComponentType { ComponentType }*
+# A small subset of XLInclude from: http://www.w3.org/2001/XInclude.xsd
+# Will be sufficient for now...
+IncludeType = attribute href { xsd:anyURI }?
+
+## 
+##             Various types of cells which are defined in NeuroML 2. This list will be expanded...
+##         
+CellTypes =
+  element cell { Cell }*,
+  element abstractCell { AbstractCell }*,
+  element iafTauCell { IaFTauCell }*,
+  element iafCell { IaFCell }*,
+  element izhikevichCell { IzhikevichCell }*,
+  element adExIaFCell { AdExIaFCell }*
+
+## 
+##             Various types of synapse which are defined in NeuroML 2. This list will be expanded...
+##         
+SynapseTypes =
+  element expOneSynapse { ExpOneSynapse }*,
+  element expTwoSynapse { ExpTwoSynapse }*,
+  element nmdaSynapse { NmdaSynapse }*,
+  element stpSynapse { StpSynapse }*
+
+## 
+##             Various types of concentration model which are defined in NeuroML 2. This list will be expanded...
+##         
+ConcentrationModelTypes =
+  element decayingPoolConcentrationModel {
+    DecayingPoolConcentrationModel
+  }*
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+# IonChannel element
+
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+IonChannel =
+  Standalone,
+  (element gate { GateHHUndetermined }*
+   | # TODO check type="gateHHrates" for this
+     element gateHHrates { GateHHRates }*
+   | element gateHHratesTau { GateHHRatesTau }*
+   | element gateHHtauInf { GateHHTauInf }*),
+  attribute species { NmlId }?,
+  attribute type { channelTypes }?,
+  attribute conductance { Nml2Quantity_conductance }?
+channelTypes = "ionChannelPassive" | "ionChannelHH" | "ionChannelKS"
+gateTypes = "gateHHrates" | "gateHHratesTau" | "gateHHtauInf" | "gateKS"
+GateHHUndetermined =
+  Base,
+  (element notes { Notes }?
+   & element q10Settings { Q10Settings }?
+   & element forwardRate { HHRate }?
+   & element reverseRate { HHRate }?
+   & element timeCourse { HHTime }?
+   & element steadyState { HHVariable }?),
+  [ ns_1:defaultValue = "1" ] attribute instances { xsd:integer }?,
+  attribute type { gateTypes }?
+GateHHRates =
+  Base,
+  (element notes { Notes }?
+   & element q10Settings { Q10Settings }?
+   & element forwardRate { HHRate }
+   & element reverseRate { HHRate }),
+  [ ns_1:defaultValue = "1" ] attribute instances { xsd:integer }?,
+  attribute type { gateTypes }?
+GateHHTauInf =
+  Base,
+  (element notes { Notes }?
+   & element q10Settings { Q10Settings }?
+   & element timeCourse { HHTime }
+   & element steadyState { HHVariable }),
+  [ ns_1:defaultValue = "1" ] attribute instances { xsd:integer }?,
+  attribute type { gateTypes }?
+GateHHRatesTau =
+  Base,
+  (element notes { Notes }?
+   & element q10Settings { Q10Settings }?
+   & element forwardRate { HHRate }
+   & element reverseRate { HHRate }
+   & element timeCourse { HHTime }),
+  [ ns_1:defaultValue = "1" ] attribute instances { xsd:integer }?,
+  attribute type { gateTypes }?
+Q10Settings =
+  attribute type { NmlId },
+  attribute fixedQ10 { Nml2Quantity_none }?,
+  #  TODO: make this and follwing 2 attrs either/or
+  attribute q10Factor { Nml2Quantity_none }?,
+  attribute experimentalTemp { Nml2Quantity_temperature }?
+HHRate =
+  attribute type { NmlId },
+  attribute rate { Nml2Quantity_pertime }?,
+  attribute midpoint { Nml2Quantity_voltage }?,
+  attribute scale { Nml2Quantity_voltage }?
+HHVariable =
+  attribute type { NmlId },
+  attribute rate { xsd:float }?,
+  attribute midpoint { Nml2Quantity_voltage }?,
+  attribute scale { Nml2Quantity_voltage }?
+HHTime =
+  attribute type { NmlId },
+  attribute rate { Nml2Quantity_time }?,
+  attribute midpoint { Nml2Quantity_voltage }?,
+  attribute scale { Nml2Quantity_voltage }?,
+  (attribute tau { Nml2Quantity_time }?)
+  #  TODO: make this and prev 3 attrs either/or
+  
+# <xs:complexType name="FixedTimeCourse">
+#         <xs:attribute name="tau" type="Nml2Quantity_time" use="required"/>
+# </xs:complexType>
+
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+# Concentration Model types
+
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+DecayingPoolConcentrationModel =
+  Standalone,
+  attribute ion {
+    NmlId
+    >> a:documentation [
+         "\x{a}" ~
+         "                        Should not be required, as it's present on the species element!\x{a}" ~
+         "                    "
+       ]
+  },
+  attribute restingConc { Nml2Quantity_concentration },
+  attribute decayConstant { Nml2Quantity_time },
+  attribute shellThickness { Nml2Quantity_length }
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+# Synapse types
+
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ConductanceBasedSynapse =
+  Standalone,
+  attribute gbase { Nml2Quantity_conductance },
+  attribute erev { Nml2Quantity_voltage }
+ExpOneSynapse =
+  ConductanceBasedSynapse,
+  attribute tauDecay { Nml2Quantity_time }
+ExpTwoSynapse =
+  ConductanceBasedSynapse,
+  attribute tauDecay { Nml2Quantity_time },
+  attribute tauRise { Nml2Quantity_time }
+NmdaSynapse =
+  ExpTwoSynapse,
+  element voltageConcDepBlock { VoltageConcDepBlock }
+StpSynapse =
+  ExpTwoSynapse,
+  element stpMechanism { StpMechanism }
+VoltageConcDepBlock =
+  attribute type { xsd:string }?,
+  attribute species { NmlId },
+  attribute blockConcentration { Nml2Quantity_concentration },
+  attribute scalingConc { Nml2Quantity_concentration },
+  attribute scalingVolt { Nml2Quantity_voltage }
+StpMechanism =
+  attribute initReleaseProb { ZeroToOne },
+  attribute tauFac { Nml2Quantity_time },
+  attribute tauRec { Nml2Quantity_time }
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+# Cell element
+
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+AbstractCell = Standalone
+IaFTauCell =
+  AbstractCell,
+  attribute leakReversal { Nml2Quantity_voltage },
+  attribute thresh { Nml2Quantity_voltage },
+  attribute reset { Nml2Quantity_voltage },
+  attribute tau { Nml2Quantity_time }
+IaFCell =
+  AbstractCell,
+  attribute leakReversal { Nml2Quantity_voltage },
+  attribute thresh { Nml2Quantity_voltage },
+  attribute reset { Nml2Quantity_voltage },
+  attribute C { Nml2Quantity_capacitance },
+  attribute leakConductance { Nml2Quantity_conductance }
+IzhikevichCell =
+  AbstractCell,
+  attribute v0 { Nml2Quantity_voltage },
+  attribute thresh { Nml2Quantity_voltage },
+  attribute a { Nml2Quantity_none },
+  attribute b { Nml2Quantity_none },
+  attribute c { Nml2Quantity_none },
+  attribute d { Nml2Quantity_none }
+  # <xs:attribute name="Iamp" type="Nml2Quantity_none" use="required"/>
+  # <xs:attribute name="Idel" type="Nml2Quantity_time" use="required"/>
+  # <xs:attribute name="Idur" type="Nml2Quantity_time" use="required"/>
+  
+AdExIaFCell =
+  AbstractCell,
+  attribute C { Nml2Quantity_capacitance },
+  attribute gL { Nml2Quantity_conductance },
+  attribute EL { Nml2Quantity_voltage },
+  attribute reset { Nml2Quantity_voltage },
+  attribute VT { Nml2Quantity_voltage },
+  attribute thresh { Nml2Quantity_voltage },
+  attribute delT { Nml2Quantity_voltage },
+  attribute tauw { Nml2Quantity_time },
+  attribute a { Nml2Quantity_conductance },
+  attribute b { Nml2Quantity_current }
+  # <xs:attribute name="Iamp" type="Nml2Quantity_current" use="required"/>
+  # <xs:attribute name="Idel" type="Nml2Quantity_time" use="required"/>
+  # <xs:attribute name="Idur" type="Nml2Quantity_time" use="required"/>
+  
+Cell =
+  AbstractCell,
+  element morphology { Morphology }?,
+  element biophysicalProperties { BiophysicalProperties }?,
+  [ ns_1:defaultValue = "1" ]
+  attribute morphology {
+    NmlId
+    >> a:documentation [
+         "\x{a}" ~
+         "                        Should only be used if morphology element is outside the cell.\x{a}" ~
+         "                                          This points to the id of the morphology\x{a}" ~
+         "                        \x{a}" ~
+         "                    "
+       ]
+  }?,
+  [ ns_1:defaultValue = "1" ]
+  attribute biophysicalProperties {
+    NmlId
+    >> a:documentation [
+         "\x{a}" ~
+         "                        Should only be used if biophysicalProperties element is outside the cell.\x{a}" ~
+         "                                          This points to the id of the biophysicalProperties\x{a}" ~
+         "                        \x{a}" ~
+         "                    "
+       ]
+  }?
+
+## 
+##             Standalone element which is usually inside a single cell, but could be outside and
+##                               referenced by id.
+##             
+##         
+Morphology =
+  Standalone,
+  element segment { Segment }+,
+  element segmentGroup { SegmentGroup }*
+Segment =
+  Base,
+  element parent { SegmentParent }?,
+  element proximal { Point3DWithDiam }?,
+  element distal { Point3DWithDiam },
+  # TODO: Do we want to do away with numerical ids and just use unique strings/names in id attribute?
+  
+  # <xs:attribute name="id" type="SegmentId" use="required"/>
+  attribute name { xsd:string }?
+SegmentParent =
+  attribute segment { SegmentId },
+  [ ns_1:defaultValue = "1" ] attribute fractionAlong { ZeroToOne }?
+
+## 
+##             A 3D point with diameter.
+##         
+Point3DWithDiam =
+  attribute x { xsd:double },
+  attribute y { xsd:double },
+  attribute z { xsd:double },
+  attribute diameter { xsd:double }
+SegmentGroup =
+  # .... dendrite_group  ...
+  Base,
+  element member { Member }*,
+  element include { Include }*,
+  element path { Path }*,
+  element subTree { SubTree }*,
+  element inhomogeneousParam { InhomogeneousParam }*
+InhomogeneousParam =
+  Base,
+  element proximal { ProximalDetails }?,
+  element distal { DistalDetails }?,
+  attribute variable { xsd:string },
+  attribute metric { Metric }
+
+## 
+##             Allowed metrics for InhomogeneousParam
+##         
+Metric = "Path Length from root"
+ProximalDetails = attribute translationStart { xsd:double }
+DistalDetails = attribute normalizationEnd { xsd:double }
+Member = attribute segment { SegmentId }
+Include = attribute segmentGroup { NmlId }
+Path =
+  element from { SegmentEndPoint }?,
+  element to { SegmentEndPoint }?
+SubTree =
+  element from { SegmentEndPoint }?
+  | element to { SegmentEndPoint }?
+SegmentEndPoint = attribute segment { SegmentId }
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+# Biophysical properties
+
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+## 
+##             Standalone element which is usually inside a single cell, but could be outside and
+##                               referenced by id.
+##             
+##         
+BiophysicalProperties =
+  Standalone,
+  element membraneProperties { MembraneProperties },
+  element intracellularProperties { IntracellularProperties }?,
+  element extracellularProperties { ExtracellularProperties }?
+MembraneProperties =
+  element channelPopulation { ChannelPopulation }*,
+  element channelDensity { ChannelDensity }*,
+  element spikeThresh { ValueAcrossSegOrSegGroup }*,
+  element specificCapacitance { ValueAcrossSegOrSegGroup }*,
+  element initMembPotential { ValueAcrossSegOrSegGroup }*,
+  element reversalPotential { ReversalPotential }*
+ChannelPopulation =
+  Base,
+  element variableParameter { VariableParameter }*,
+  attribute ionChannel { NmlId },
+  attribute number { xsd:nonNegativeInteger },
+  attribute erev { Nml2Quantity_voltage }?,
+  # Note: only one of the following should be used!!
+  [ ns_1:defaultValue = "all" ] attribute segmentGroup { NmlId }?,
+  attribute segment { NmlId }?,
+  attribute ion {
+    NmlId
+    >> a:documentation [
+         "\x{a}" ~
+         "                        Specifying the ion here again is redundant, this will be set in ionChannel. It is added here\x{a}" ~
+         "                        TEMPORARILY as selecting all ca or na conducting channel populations/densities in a cell would be difficult otherwise.\x{a}" ~
+         "                        It should be removed in the longer term, due to possible inconsistencies in this value and that in the ionChannel\x{a}" ~
+         "                        element. TODO: remove.\x{a}" ~
+         "                        \x{a}" ~
+         "                    "
+       ]
+  }?
+ChannelDensity =
+  Base,
+  element variableParameter { VariableParameter }*,
+  attribute ionChannel { NmlId },
+  attribute condDensity { Nml2Quantity_conductanceDensity }?,
+  attribute erev { Nml2Quantity_voltage }?,
+  # Note: only one of the following should be used!!
+  [ ns_1:defaultValue = "all" ] attribute segmentGroup { NmlId }?,
+  attribute segment { NmlId }?,
+  attribute ion {
+    NmlId
+    >> a:documentation [
+         "\x{a}" ~
+         "                        Specifying the ion here again is redundant, this will be set in ionChannel. It is added here\x{a}" ~
+         "                        TEMPORARILY as selecting all ca or na conducting channel populations/densities in a cell would be difficult otherwise.\x{a}" ~
+         "                        It should be removed in the longer term, due to possible inconsistencies in this value and that in the ionChannel\x{a}" ~
+         "                        element. TODO: remove.\x{a}" ~
+         "                        \x{a}" ~
+         "                    "
+       ]
+  }?
+ValueAcrossSegOrSegGroup =
+  attribute value { Nml2Quantity }?,
+  # Note: only one of the following should be used!!
+  [ ns_1:defaultValue = "all" ] attribute segmentGroup { NmlId }?,
+  attribute segment { NmlId }?
+VariableParameter =
+  element inhomogeneousValue { InhomogeneousValue }?,
+  attribute parameter { xsd:string },
+  attribute segmentGroup { xsd:string }
+InhomogeneousValue =
+  attribute inhomogeneousParam { xsd:string },
+  attribute value { xsd:string }
+ReversalPotential =
+  ValueAcrossSegOrSegGroup,
+  attribute species { NmlId }?
+Species =
+  ValueAcrossSegOrSegGroup,
+  attribute id { NmlId },
+  attribute concentrationModel { NmlId },
+  attribute ion {
+    NmlId
+    >> a:documentation [
+         "\x{a}" ~
+         "                        Specifying the ion here again is redundant, the ion name should be the same as id. Kept for now\x{a}" ~
+         "                        until LEMS implementation can select by id. TODO: remove.\x{a}" ~
+         "                        \x{a}" ~
+         "                    "
+       ]
+  }?,
+  attribute initialConcentration { Nml2Quantity_concentration },
+  attribute initialExtConcentration { Nml2Quantity_concentration }
+# <xs:complexType name="FixedConcentration">
+#     <xs:attribute name="concentration" type="Nml2Quantity_concentration" use="required"/>
+# </xs:complexType>
+#
+
+# TODO: remove
+ConcentrationModel_D =
+  DecayingPoolConcentrationModel,
+  attribute type { text }
+IntracellularProperties =
+  element species { Species }*,
+  element resistivity { ValueAcrossSegOrSegGroup }*
+ExtracellularProperties =
+  Base,
+  # Should be standalone, but need some real elements below or XSD not valid...
+  element species { Species }*,
+  # Further elements will be specified!!
+  attribute temperature { Nml2Quantity_temperature }?
+ExtracellularPropertiesLocal =
+  element species { Species }*,
+  # Further elements will be specified!!
+  attribute temperature { Nml2Quantity_temperature }?
+ReactionScheme =
+  Base,
+  # Should be standalone, but need some real elements below or XSD not valid...
+  element * { text }*,
+  # Further elements will be specified!!
+  attribute source { xsd:string },
+  attribute type { xsd:string }
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+# Inputs
+
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+# Will be updated in line with LEMS ComponentType definitions
+PulseGenerator =
+  Standalone,
+  attribute delay { Nml2Quantity_time },
+  attribute duration { Nml2Quantity_time },
+  attribute amplitude { Nml2Quantity_current }
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+# Networks
+
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Network =
+  Standalone,
+  element space { Space }*,
+  element region { Region }*,
+  element extracellularProperties { ExtracellularPropertiesLocal }*,
+  element population { Population }+,
+  element cellSet { CellSet }*,
+  element synapticConnection { SynapticConnection }*,
+  # Will be updated in line with LEMS ComponentType definitions
+  element projection { Projection }*,
+  # Will be updated in line with LEMS ComponentType definitions
+  element explicitInput { ExplicitInput }*,
+  # Will be updated in line with LEMS ComponentType definitions
+  (element inputList { InputList }*)
+  # Will be updated in line with LEMS ComponentType definitions
+  
+Space =
+  # Something onto which cells & networks can be laid out, e.g. n dim grid or n dim Euclidean space
+  Base,
+  element structure { SpaceStructure }?,
+  attribute basedOn { allowedSpaces }?
+SpaceStructure =
+  attribute xSpacing { xsd:float }?,
+  attribute ySpacing { xsd:float }?,
+  #  only use if >= 2D grid
+  attribute zSpacing { xsd:float }?,
+  #  only use if 3D grid
+  [ ns_1:defaultValue = "0" ] attribute xStart { xsd:float }?,
+  [ ns_1:defaultValue = "0" ] attribute yStart { xsd:float }?,
+  #  only use if >= 2D grid
+  ([ ns_1:defaultValue = "0" ] attribute zStart { xsd:float }?)
+  #  only use if 3D grid
+  
+allowedSpaces =
+  "Euclidean_1D"
+  | "Euclidean_2D"
+  | "Euclidean_3D"
+  | "Grid_1D"
+  | "Grid_2D"
+  | "Grid_3D"
+Region =
+  Base,
+  element * { text }*,
+  # Further elements will be specified!!
+  attribute space { NmlId }?
+Population =
+  Standalone,
+  (element layout { Layout }?
+   | element instance { Instance }+),
+  attribute cell { NmlId }?,
+  # Only one of these should be used!!!
+  attribute network { NmlId }?,
+  # Only one of these should be used!!!
+  attribute component { NmlId }?,
+  # Only one of these should be used!!!
+  attribute size { xsd:integer }?,
+  # Temp!!!
+  attribute type { populationTypes }?,
+  attribute extracellularProperties { NmlId }?
+populationTypes = "population" | "populationList"
+Layout =
+  (element random { RandomLayout }
+   | element grid { GridLayout }
+   | element unstructured { UnstructuredLayout }),
+  attribute space { NmlId }?
+UnstructuredLayout = attribute number { xsd:nonNegativeInteger }?
+RandomLayout =
+  attribute number { xsd:nonNegativeInteger }?,
+  attribute region { NmlId }?
+GridLayout =
+  attribute xSize { xsd:nonNegativeInteger }?,
+  attribute ySize { xsd:nonNegativeInteger }?,
+  #  only use if >= 2D grid
+  (attribute zSize { xsd:nonNegativeInteger }?)
+  #  only use if 3D grid
+  
+Instance =
+  element location { Location },
+  attribute id { xsd:nonNegativeInteger }?,
+  attribute i { xsd:nonNegativeInteger }?,
+  # for grid
+  attribute j { xsd:nonNegativeInteger }?,
+  # for grid
+  (attribute k { xsd:nonNegativeInteger }?)
+  # for grid
+  
+Location =
+  attribute x { xsd:float }?,
+  attribute y { xsd:float }?,
+  attribute z { xsd:float }?
+CellSet =
+  Base,
+  element * { text }*,
+  # Further elements will be specified!!
+  attribute select { xsd:string }
+
+## 
+##             Single explicit connection. Introduced to test connections in LEMS. Will probably be removed in favour of
+##             connections wrapped in projection element
+##         
+SynapticConnection =
+  attribute from { xsd:string }?,
+  attribute to { xsd:string }?,
+  attribute synapse { xsd:string }?
+
+## 
+##             Subject to change as it gets tested with LEMS
+##         
+Projection =
+  Base,
+  element connection { Connection }*,
+  attribute presynapticPopulation { NmlId }?,
+  attribute postsynapticPopulation { NmlId }?,
+  attribute synapse { NmlId }?
+
+## 
+##             Subject to change as it gets tested with LEMS
+##         
+Connection =
+  attribute id { xsd:nonNegativeInteger }?,
+  attribute preCellId { xsd:string }?,
+  attribute postCellId { xsd:string }?
+
+## 
+##             Single explicit input. Introduced to test inputs in LEMS. Will probably be removed in favour of
+##             inputs wrapped in inputList element
+##         
+ExplicitInput =
+  attribute target { xsd:string }?,
+  attribute input { xsd:string }?,
+  attribute destination { xsd:string }?
+
+## 
+##             Subject to change as it gets tested with LEMS
+##         
+InputList =
+  Base,
+  element input { Input }+,
+  attribute population { NmlId }?,
+  attribute component { NmlId }?
+
+## 
+##             Subject to change as it gets tested with LEMS
+##         
+Input =
+  attribute id { xsd:nonNegativeInteger }?,
+  attribute target { xsd:string }?,
+  attribute destination { NmlId }?
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+# Further Core elements
+
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+# NOTE: Base and Standalone definitions moved to end of file, as some XML language binding
+# generators, e.g. generateDS.py, require superclasses to be defined after the subclasses...
+
+## 
+##             Anything which can have a unique id (within its parent) i.e. most elements.
+##         
+Base =
+  attribute id { NmlId },
+  attribute neuroLexId { NeuroLexId }?
+
+## 
+##             Elements which can stand alone and be referenced by id, e.g. cell, morphology.
+##         
+Standalone =
+  Base,
+  element notes { Notes }?,
+  # More metadata needed
+  element annotation { Annotation }?,
+  # More metadata needed
+  attribute name {
+    
+    ## 
+    ##                         Optional human readable name of the element. Not necessarily unique; should not be used for referencing/indexing.
+    ##                     
+    xsd:string
+  }?,
+  attribute metaid { MetaId }?

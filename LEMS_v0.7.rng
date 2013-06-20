@@ -1,0 +1,526 @@
+<?xml version="1.0"?>
+<!--
+
+    NOTE: This will only at present validate LEMS description files containing Dimension, Unit, Include, ComponentType
+    elements in that order! This is a restriction which seems adequate for defining the NeuroML 2 core ComponentTypes
+
+    v0.6 & v0.7 are updates prompted by the refactored Java LEMS implementation (https://github.com/robertcannon/jLEMS)
+    and pylems (https://github.com/lisphacker/pylems)
+-->
+<rng:grammar xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:rng="http://relaxng.org/ns/structure/1.0" xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns="http://www.neuroml.org/lems/0.7" ns="http://www.neuroml.org/lems/0.7" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+
+    <rng:start combine="choice"><rng:ref name="starting_Lems"/></rng:start><rng:define name="starting_Lems"><rng:element name="Lems"><rng:ref name="Lems"/>
+        <a:documentation>
+            The root Lems element.
+        </a:documentation>
+    </rng:element></rng:define>
+
+    <rng:define name="Lems">
+<rng:attribute name="xsi:schemaLocation"><text/></rng:attribute>
+
+
+        
+            <rng:optional><rng:element name="Target"><rng:ref name="Target"/></rng:element></rng:optional>
+            <rng:zeroOrMore><rng:element name="Include"><rng:ref name="Include"/></rng:element></rng:zeroOrMore>
+            <rng:zeroOrMore><rng:element name="Dimension"><rng:ref name="Dimension"/></rng:element></rng:zeroOrMore>
+            <rng:zeroOrMore><rng:element name="Unit"><rng:ref name="Unit"/></rng:element></rng:zeroOrMore>
+            <rng:zeroOrMore><rng:element name="Constant"><rng:ref name="Constant"/></rng:element></rng:zeroOrMore>
+            <rng:zeroOrMore><rng:element name="ComponentType"><rng:ref name="ComponentType"/></rng:element></rng:zeroOrMore>
+            <rng:zeroOrMore><rng:element name="Component"><rng:ref name="Component"/></rng:element></rng:zeroOrMore>
+        
+
+        <rng:optional><rng:attribute name="description"><rng:data type="string"/></rng:attribute></rng:optional>
+
+    </rng:define>
+
+
+    <rng:define name="Target">
+        <rng:attribute name="component"><rng:data type="string"/></rng:attribute>
+    </rng:define>
+
+    <rng:define name="Include">
+        <rng:attribute name="file"><rng:data type="string"/></rng:attribute>
+    </rng:define>
+
+
+    <rng:define name="Dimension">
+        <rng:attribute name="name"><rng:data type="string"/></rng:attribute>
+        <rng:optional><rng:attribute xmlns:ns_1="http://relaxng.org/ns/compatibility/annotations/1.0" name="m" ns_1:defaultValue="0"><rng:data type="integer"/></rng:attribute></rng:optional>
+        <rng:optional><rng:attribute xmlns:ns_1="http://relaxng.org/ns/compatibility/annotations/1.0" name="l" ns_1:defaultValue="0"><rng:data type="integer"/></rng:attribute></rng:optional>
+        <rng:optional><rng:attribute xmlns:ns_1="http://relaxng.org/ns/compatibility/annotations/1.0" name="t" ns_1:defaultValue="0"><rng:data type="integer"/></rng:attribute></rng:optional>
+        <rng:optional><rng:attribute xmlns:ns_1="http://relaxng.org/ns/compatibility/annotations/1.0" name="i" ns_1:defaultValue="0"><rng:data type="integer"/></rng:attribute></rng:optional>
+        <rng:optional><rng:attribute xmlns:ns_1="http://relaxng.org/ns/compatibility/annotations/1.0" name="k" ns_1:defaultValue="0"><rng:data type="integer"/></rng:attribute></rng:optional>
+        <rng:optional><rng:attribute xmlns:ns_1="http://relaxng.org/ns/compatibility/annotations/1.0" name="n" ns_1:defaultValue="0"><rng:data type="integer"/></rng:attribute></rng:optional>
+    </rng:define>
+
+
+    <rng:define name="Unit">
+        <rng:attribute name="symbol"><rng:data type="string"/></rng:attribute>
+        <rng:attribute name="dimension"><rng:data type="string"/></rng:attribute>
+        <rng:optional><rng:attribute xmlns:ns_1="http://relaxng.org/ns/compatibility/annotations/1.0" name="power" ns_1:defaultValue="0"><rng:data type="integer"><a:documentation>
+                        Some have asked whether fractional dimensions should be allowed. Disallowing it until needed...
+                </a:documentation></rng:data></rng:attribute></rng:optional>
+        <rng:optional><rng:attribute xmlns:ns_1="http://relaxng.org/ns/compatibility/annotations/1.0" name="scale" ns_1:defaultValue="1"><rng:data type="float"/></rng:attribute></rng:optional>
+        <rng:optional><rng:attribute xmlns:ns_1="http://relaxng.org/ns/compatibility/annotations/1.0" name="offset" ns_1:defaultValue="0"><rng:data type="float"/></rng:attribute></rng:optional>
+
+    </rng:define>
+
+
+
+
+    <rng:define name="DerivedParameter">
+
+        <rng:attribute name="name"><rng:data type="string"/></rng:attribute>
+        <rng:optional><rng:attribute xmlns:ns_1="http://relaxng.org/ns/compatibility/annotations/1.0" name="dimension" ns_1:defaultValue="none"><rng:data type="string"/></rng:attribute></rng:optional>
+        <rng:attribute name="value"><rng:data type="string"/></rng:attribute>
+
+    </rng:define>
+
+
+    <rng:define name="PhysicalQuantity">
+        <a:documentation>
+            A value for a physical quantity in LEMS, e.g. 20, -60.0mV, .05 per_ms or 5nA
+        </a:documentation>
+
+        <rng:data type="string"><rng:param name="pattern">-?([0-9]*(\.[0-9]+)?)([eE]-?[0-9]+)?[\s]*([_a-zA-Z0-9])*</rng:param></rng:data>
+
+    </rng:define>
+
+    <rng:define name="Constant">
+
+        <rng:attribute name="name"><rng:data type="string"/></rng:attribute>
+        <rng:optional><rng:attribute xmlns:ns_1="http://relaxng.org/ns/compatibility/annotations/1.0" name="dimension" ns_1:defaultValue="none"><rng:data type="string"/></rng:attribute></rng:optional>
+        <rng:attribute name="value"><rng:ref name="PhysicalQuantity"/></rng:attribute>
+        <rng:optional><rng:attribute name="description"><rng:data type="string"/></rng:attribute></rng:optional>
+
+    </rng:define>
+
+    <rng:define name="ComponentReference">
+
+        <rng:attribute name="name"><rng:data type="string"/></rng:attribute>
+        <rng:attribute name="type"><rng:data type="string"/></rng:attribute>
+
+    </rng:define>
+
+    <rng:define name="Child">
+
+        <rng:attribute name="name"><rng:data type="string"/></rng:attribute>
+        <rng:attribute name="type"><rng:data type="string"/></rng:attribute>
+
+    </rng:define>
+
+    <rng:define name="Attachments">
+
+        <rng:attribute name="name"><rng:data type="string"/></rng:attribute>
+        <rng:attribute name="type"><rng:data type="string"/></rng:attribute>
+        <rng:optional><rng:attribute name="description"><rng:data type="string"/></rng:attribute></rng:optional>
+
+    </rng:define>
+
+    <rng:define name="EventPort">
+
+        <rng:attribute name="name"><rng:data type="string"/></rng:attribute>
+        <rng:attribute name="direction"><rng:data type="string"/></rng:attribute> <!-- Should be enumeration... -->
+        <rng:optional><rng:attribute name="description"><rng:data type="string"/></rng:attribute></rng:optional>
+
+    </rng:define>
+
+    <rng:define name="Fixed">
+
+        <rng:attribute name="parameter"><rng:data type="string"/></rng:attribute>
+        <rng:attribute name="value"><rng:ref name="PhysicalQuantity"/></rng:attribute>
+        <rng:optional><rng:attribute name="description"><rng:data type="string"/></rng:attribute></rng:optional>
+
+    </rng:define>
+
+    <rng:define name="Link">
+
+        <rng:attribute name="name"><rng:data type="string"/></rng:attribute>
+        <rng:attribute name="type"><rng:data type="string"/></rng:attribute>
+        <rng:optional><rng:attribute name="description"><rng:data type="string"/></rng:attribute></rng:optional>
+
+    </rng:define>
+
+    <rng:define name="Children">
+
+        <rng:attribute name="name"><rng:data type="string"/></rng:attribute>
+        <rng:optional><rng:attribute name="type"><rng:data type="string"/></rng:attribute></rng:optional>
+        <rng:optional><rng:attribute name="min"><rng:data type="integer"/></rng:attribute></rng:optional>
+        <rng:optional><rng:attribute name="max"><rng:data type="integer"/></rng:attribute></rng:optional>
+
+    </rng:define>
+
+    <rng:define name="Path">
+
+        <rng:attribute name="name"><rng:data type="string"/></rng:attribute>
+        <rng:optional><rng:attribute name="description"><rng:data type="string"/></rng:attribute></rng:optional>
+
+    </rng:define>
+
+    <rng:define name="Text">
+
+        <rng:attribute name="name"><rng:data type="string"/></rng:attribute>
+        <rng:optional><rng:attribute name="description"><rng:data type="string"/></rng:attribute></rng:optional>
+
+    </rng:define>
+
+
+
+    <rng:define name="StateVariable">
+
+        <rng:attribute name="name"><rng:data type="string"/></rng:attribute>
+        <rng:optional><rng:attribute xmlns:ns_1="http://relaxng.org/ns/compatibility/annotations/1.0" name="dimension" ns_1:defaultValue="none"><rng:data type="string"/></rng:attribute></rng:optional>
+        <rng:optional><rng:attribute name="exposure"><rng:data type="string"/></rng:attribute></rng:optional>
+        <rng:optional><rng:attribute name="description"><rng:data type="string"/></rng:attribute></rng:optional>
+
+    </rng:define>
+
+
+    <rng:define name="DerivedVariable">
+
+        <rng:attribute name="name"><rng:data type="string"/></rng:attribute>
+        <rng:optional><rng:attribute xmlns:ns_1="http://relaxng.org/ns/compatibility/annotations/1.0" name="dimension" ns_1:defaultValue="none"><rng:data type="string"/></rng:attribute></rng:optional>
+        <rng:optional><rng:attribute name="exposure"><rng:data type="string"/></rng:attribute></rng:optional>
+
+        <rng:optional><rng:attribute name="select"><rng:data type="string"/></rng:attribute></rng:optional>  <!-- only one of these... -->
+        <rng:optional><rng:attribute name="value"><rng:data type="string"/></rng:attribute></rng:optional>   <!-- only one of these... -->
+
+        <rng:optional><rng:attribute name="reduce"><rng:data type="string"/></rng:attribute></rng:optional>     <!-- only if select present... -->
+        <rng:optional><rng:attribute name="required"><rng:data type="string"/></rng:attribute></rng:optional>     <!-- only if reduce present... -->
+
+    </rng:define>
+
+    <rng:define name="ConditionalDerivedVariable">
+
+        
+            <rng:oneOrMore><rng:element name="Case"><rng:ref name="Case"/></rng:element></rng:oneOrMore>
+        
+
+        <rng:attribute name="name"><rng:data type="string"/></rng:attribute>
+        <rng:optional><rng:attribute xmlns:ns_1="http://relaxng.org/ns/compatibility/annotations/1.0" name="dimension" ns_1:defaultValue="none"><rng:data type="string"/></rng:attribute></rng:optional>
+        <rng:optional><rng:attribute name="exposure"><rng:data type="string"/></rng:attribute></rng:optional>
+
+
+    </rng:define>
+
+
+    <rng:define name="Case">
+
+        <rng:attribute name="condition"><rng:data type="string"/></rng:attribute>
+        <rng:attribute name="value"><rng:data type="string"/></rng:attribute>
+    </rng:define>
+
+    <rng:define name="TimeDerivative">
+
+        <rng:attribute name="variable"><rng:data type="string"/></rng:attribute>
+        <rng:attribute name="value"><rng:data type="string"/></rng:attribute>
+
+    </rng:define>
+
+    <rng:define name="OnStart">
+
+        
+            <rng:oneOrMore><rng:element name="StateAssignment"><rng:ref name="StateAssignment"/></rng:element></rng:oneOrMore>
+        
+
+    </rng:define>
+
+    <rng:define name="OnEntry">
+
+        
+            <rng:oneOrMore><rng:element name="StateAssignment"><rng:ref name="StateAssignment"/></rng:element></rng:oneOrMore>
+        
+
+    </rng:define>
+
+    <rng:define name="OnEvent">
+
+        
+            <rng:zeroOrMore><rng:element name="StateAssignment"><rng:ref name="StateAssignment"/></rng:element></rng:zeroOrMore>
+            <rng:zeroOrMore><rng:element name="EventOut"><rng:ref name="EventOut"/></rng:element></rng:zeroOrMore>
+        
+
+        <rng:attribute name="port"><rng:data type="string"/></rng:attribute>
+
+    </rng:define>
+
+    <rng:define name="OnCondition">
+
+        
+            <rng:zeroOrMore><rng:element name="StateAssignment"><rng:ref name="StateAssignment"/></rng:element></rng:zeroOrMore>
+            <rng:zeroOrMore><rng:element name="EventOut"><rng:ref name="EventOut"/></rng:element></rng:zeroOrMore>
+            <rng:optional><rng:element name="Transition"><rng:ref name="Transition"/></rng:element></rng:optional>   <!-- only on OnCondition inside Regime... -->
+        
+
+        <rng:attribute name="test"><rng:data type="string"/></rng:attribute>
+
+    </rng:define>
+
+
+    <rng:define name="EventOut">
+
+        <rng:attribute name="port"><rng:data type="string"/></rng:attribute>
+
+    </rng:define>
+
+
+    <rng:define name="StateAssignment">
+
+        <rng:attribute name="variable"><rng:data type="string"/></rng:attribute>
+        <rng:attribute name="value"><rng:data type="string"/></rng:attribute>
+
+    </rng:define>
+
+
+
+    <rng:define name="Regime">
+
+        
+            <rng:zeroOrMore><rng:element name="TimeDerivative"><rng:ref name="TimeDerivative"/></rng:element></rng:zeroOrMore>
+            <rng:optional><rng:element name="OnEntry"><rng:ref name="OnStart"/></rng:element></rng:optional>
+            <rng:zeroOrMore><rng:element name="OnCondition"><rng:ref name="OnCondition"/></rng:element></rng:zeroOrMore>
+        
+
+        <rng:attribute name="name"><rng:data type="string"/></rng:attribute>
+        <rng:optional><rng:attribute name="initial"><rng:ref name="TrueOrFalse"/></rng:attribute></rng:optional>
+
+    </rng:define>
+
+
+    <rng:define name="TrueOrFalse">
+        <rng:choice>
+            <rng:value>true</rng:value>
+            <rng:value>false</rng:value>
+        </rng:choice>
+    </rng:define>
+
+
+    <rng:define name="Transition">
+
+        <rng:attribute name="regime"><rng:data type="string"/></rng:attribute>
+
+    </rng:define>
+
+
+
+    <rng:define name="Component">
+        
+            <rng:zeroOrMore><rng:element name="Component"><rng:ref name="Component"/></rng:element></rng:zeroOrMore>
+        
+        <rng:attribute name="id"><rng:data type="string"/></rng:attribute>
+        <rng:attribute name="type"><rng:data type="string"/></rng:attribute>
+        <rng:attribute><rng:anyName/><rng:text/></rng:attribute>
+    </rng:define>
+
+    <!-- ComponentType is used for component definitions containing parts which are currently specific to LEMS, e.g. Build/MultiInstantiate -->
+    <rng:define name="ComponentType">
+        
+            <rng:zeroOrMore><rng:element name="Property"><rng:ref name="Property"/></rng:element></rng:zeroOrMore>
+            <rng:zeroOrMore><rng:element name="Parameter"><rng:ref name="Parameter"/></rng:element></rng:zeroOrMore>
+            <!--<xs:element name="DerivedParameter" type="DerivedParameter" minOccurs="0" maxOccurs="unbounded"/>-->
+            <rng:zeroOrMore><rng:element name="Constant"><rng:ref name="Constant"/></rng:element></rng:zeroOrMore>
+            <rng:zeroOrMore><rng:element name="Child"><rng:ref name="Child"/></rng:element></rng:zeroOrMore>
+            <rng:zeroOrMore><rng:element name="Children"><rng:ref name="Children"/></rng:element></rng:zeroOrMore>
+            <rng:zeroOrMore><rng:element name="Fixed"><rng:ref name="Fixed"/></rng:element></rng:zeroOrMore>
+            <rng:zeroOrMore><rng:element name="Link"><rng:ref name="Link"/></rng:element></rng:zeroOrMore>
+            <rng:zeroOrMore><rng:element name="ComponentReference"><rng:ref name="ComponentReference"/></rng:element></rng:zeroOrMore>
+            <rng:zeroOrMore><rng:element name="Attachments"><rng:ref name="Attachments"/></rng:element></rng:zeroOrMore>
+
+            <rng:zeroOrMore><rng:element name="EventPort"><rng:ref name="EventPort"/></rng:element></rng:zeroOrMore>
+
+            <rng:zeroOrMore><rng:element name="Exposure"><rng:ref name="Exposure"/></rng:element></rng:zeroOrMore>
+            <rng:zeroOrMore><rng:element name="Requirement"><rng:ref name="Requirement"/></rng:element></rng:zeroOrMore>
+
+            <rng:zeroOrMore><rng:element name="Path"><rng:ref name="Path"/></rng:element></rng:zeroOrMore>
+            <rng:zeroOrMore><rng:element name="Text"><rng:ref name="Text"/></rng:element></rng:zeroOrMore>
+
+            <rng:zeroOrMore><rng:element name="Dynamics"><rng:ref name="Dynamics"/></rng:element></rng:zeroOrMore>
+            <rng:optional><rng:element name="Structure"><rng:ref name="Structure"/></rng:element></rng:optional>
+        
+
+        <rng:attribute name="name"><rng:data type="string"/></rng:attribute>
+        <rng:optional><rng:attribute name="extends"><rng:data type="string"/></rng:attribute></rng:optional>
+        <rng:optional><rng:attribute name="description"><rng:data type="string"/></rng:attribute></rng:optional>
+
+    </rng:define>
+
+
+    <!-- for Parameter, StateVariable etc. -->
+    <rng:define name="NamedDimensionalType">
+        <rng:attribute name="name"><rng:data type="string"/></rng:attribute>
+        <rng:optional><rng:attribute xmlns:ns_1="http://relaxng.org/ns/compatibility/annotations/1.0" name="dimension" ns_1:defaultValue="none"><rng:data type="string"/></rng:attribute></rng:optional>
+        <rng:optional><rng:attribute name="description"><rng:data type="string"/></rng:attribute></rng:optional>
+    </rng:define>
+
+
+    <rng:define name="Property"> <!-- For language binding generators, so there will be a class of this name... -->
+        
+            <rng:ref name="NamedDimensionalType"/>
+        
+    </rng:define>
+
+    <rng:define name="Parameter"> <!-- For language binding generators, so there will be a class of this name... -->
+        
+            <rng:ref name="NamedDimensionalType"/>
+        
+    </rng:define>
+
+    <rng:define name="Requirement"> <!-- For language binding generators, so there will be a class of this name... -->
+        
+            <rng:ref name="NamedDimensionalType"/>
+        
+    </rng:define>
+
+    <rng:define name="Exposure"> <!-- For language binding generators, so there will be a class of this name... -->
+        
+            <rng:ref name="NamedDimensionalType"/>
+        
+    </rng:define>
+
+
+
+    <rng:define name="Dynamics">
+
+        
+            <rng:zeroOrMore><rng:element name="StateVariable"><rng:ref name="StateVariable"/></rng:element></rng:zeroOrMore>
+            <rng:zeroOrMore><rng:element name="DerivedVariable"><rng:ref name="DerivedVariable"/></rng:element></rng:zeroOrMore>
+            <rng:zeroOrMore><rng:element name="ConditionalDerivedVariable"><rng:ref name="ConditionalDerivedVariable"/></rng:element></rng:zeroOrMore>
+            <rng:zeroOrMore><rng:element name="TimeDerivative"><rng:ref name="TimeDerivative"/></rng:element></rng:zeroOrMore>
+            <rng:optional><rng:element name="OnStart"><rng:ref name="OnStart"/></rng:element></rng:optional>
+            <rng:zeroOrMore><rng:element name="OnEvent"><rng:ref name="OnEvent"/></rng:element></rng:zeroOrMore>
+            <rng:zeroOrMore><rng:element name="OnCondition"><rng:ref name="OnCondition"/></rng:element></rng:zeroOrMore>
+            <rng:zeroOrMore><rng:element name="Regime"><rng:ref name="Regime"/></rng:element></rng:zeroOrMore>
+
+            <rng:optional><rng:element name="KineticScheme"><rng:ref name="KineticScheme"/></rng:element></rng:optional>
+
+            <rng:zeroOrMore><rng:element name="Show"><rng:ref name="Show"/></rng:element></rng:zeroOrMore>
+            <rng:zeroOrMore><rng:element name="Record"><rng:ref name="Record"/></rng:element></rng:zeroOrMore>
+            <rng:zeroOrMore><rng:element name="Run"><rng:ref name="Run"/></rng:element></rng:zeroOrMore>
+        
+
+    </rng:define>
+
+    <rng:define name="Structure">
+
+        
+            <rng:optional><rng:element name="ChildInstance"><rng:ref name="ChildInstance"/></rng:element></rng:optional>
+            <rng:optional><rng:element name="MultiInstantiate"><rng:ref name="MultiInstantiate"/></rng:element></rng:optional>
+            <rng:optional><rng:element name="ForEach"><rng:ref name="ForEach"/></rng:element></rng:optional>
+            <rng:zeroOrMore><rng:element name="With"><rng:ref name="With"/></rng:element></rng:zeroOrMore>
+            <rng:optional><rng:element name="EventConnection"><rng:ref name="EventConnection"/></rng:element></rng:optional>
+        
+
+    </rng:define>
+
+    <rng:define name="ChildInstance">
+
+        <rng:attribute name="component"><rng:data type="string"/></rng:attribute>
+
+    </rng:define>
+
+    <rng:define name="MultiInstantiate">
+
+        <rng:attribute name="component"><rng:data type="string"/></rng:attribute>
+        <rng:attribute name="number"><rng:data type="string"/></rng:attribute>
+
+    </rng:define>
+
+
+    <rng:define name="ForEach">
+
+        
+            <rng:optional><rng:element name="MultiInstantiate"><rng:ref name="MultiInstantiate"/></rng:element></rng:optional>
+        
+
+        <rng:attribute name="instances"><rng:data type="string"/></rng:attribute>
+        <rng:attribute name="as"><rng:data type="string"/></rng:attribute>
+
+    </rng:define>
+
+    <rng:define name="With">
+
+        <rng:attribute name="instance"><rng:data type="string"/></rng:attribute>
+        <rng:attribute name="as"><rng:data type="string"/></rng:attribute>
+
+    </rng:define>
+
+    <rng:define name="EventConnection">
+
+        
+            <rng:optional><rng:element name="Assign"><rng:ref name="Assign"/></rng:element></rng:optional>
+        
+        
+        <rng:attribute name="from"><rng:data type="string"/></rng:attribute>
+        <rng:attribute name="to"><rng:data type="string"/></rng:attribute>
+        <rng:optional><rng:attribute name="sourcePort"><rng:data type="string"/></rng:attribute></rng:optional>
+        <rng:optional><rng:attribute name="targetPort"><rng:data type="string"/></rng:attribute></rng:optional>
+        <rng:optional><rng:attribute name="receiver"><rng:data type="string"/></rng:attribute></rng:optional>
+        <rng:optional><rng:attribute name="receiverContainer"><rng:data type="string"/></rng:attribute></rng:optional>
+        <rng:optional><rng:attribute name="delay"><rng:data type="string"/></rng:attribute></rng:optional>
+
+    </rng:define>
+
+
+    <rng:define name="Assign">
+
+        <rng:attribute name="property"><rng:data type="string"/></rng:attribute>
+        <rng:attribute name="value"><rng:data type="string"/></rng:attribute>
+
+    </rng:define>
+
+
+
+    <!--<xs:complexType name="OnCondition">
+
+        <xs:sequence>
+            <xs:element name="StateAssignment" type="StateAssignment" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="EventOut" type="EventOut" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="Transition" type="Transition" minOccurs="0" maxOccurs="1"/> 
+        </xs:sequence>
+
+        <xs:attribute name="test" type="xs:string" use="required"/>
+
+    </xs:complexType>-->
+
+
+    <rng:define name="KineticScheme">
+
+        <rng:attribute name="name"><rng:data type="string"/></rng:attribute>
+        <rng:attribute name="nodes"><rng:data type="string"/></rng:attribute>
+        <rng:attribute name="stateVariable"><rng:data type="string"/></rng:attribute>
+        <rng:attribute name="edges"><rng:data type="string"/></rng:attribute>
+        <rng:attribute name="edgeSource"><rng:data type="string"/></rng:attribute>
+        <rng:attribute name="edgeTarget"><rng:data type="string"/></rng:attribute>
+        <rng:attribute name="forwardRate"><rng:data type="string"/></rng:attribute>
+        <rng:attribute name="reverseRate"><rng:data type="string"/></rng:attribute>
+
+    </rng:define>
+    
+
+
+    <rng:define name="Show">
+
+        <rng:attribute name="src"><rng:data type="string"/></rng:attribute>
+        <rng:optional><rng:attribute name="scale"><rng:data type="string"/></rng:attribute></rng:optional>
+
+    </rng:define>
+
+    <rng:define name="Record">
+
+        <rng:attribute name="quantity"><rng:data type="string"/></rng:attribute>
+        <rng:attribute name="scale"><rng:data type="string"/></rng:attribute>
+        <rng:attribute name="color"><rng:data type="string"/></rng:attribute>
+
+    </rng:define>
+
+    <rng:define name="Run">
+
+        <rng:attribute name="component"><rng:data type="string"/></rng:attribute>
+        <rng:attribute name="variable"><rng:data type="string"/></rng:attribute>
+        <rng:attribute name="increment"><rng:data type="string"/></rng:attribute>
+        <rng:attribute name="total"><rng:data type="string"/></rng:attribute>
+
+    </rng:define>
+
+
+</rng:grammar>

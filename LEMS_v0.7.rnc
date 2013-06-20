@@ -1,0 +1,278 @@
+# 
+# NOTE: This will only at present validate LEMS description files containing Dimension, Unit, Include, ComponentType
+# elements in that order! This is a restriction which seems adequate for defining the NeuroML 2 core ComponentTypes
+# 
+# v0.6 & v0.7 are updates prompted by the refactored Java LEMS implementation (https://github.com/robertcannon/jLEMS)
+# and pylems (https://github.com/lisphacker/pylems)
+
+namespace a = "http://relaxng.org/ns/compatibility/annotations/1.0"
+default namespace ns1 = "http://www.neuroml.org/lems/0.7"
+namespace ns_1 = "http://relaxng.org/ns/compatibility/annotations/1.0"
+namespace rng = "http://relaxng.org/ns/structure/1.0"
+namespace xsi = "http://www.w3.org/2001/XMLSchema-instance"
+
+start |= starting_Lems
+starting_Lems =
+  element Lems {
+    Lems
+    >> a:documentation [
+         "\x{a}" ~
+         "            The root Lems element.\x{a}" ~
+         "        "
+       ]
+  }
+Lems =
+  [ ns1:text [ ] ] attribute xsi:schemaLocation { text },
+  element Target { Target }?,
+  element Include { Include }*,
+  element Dimension { Dimension }*,
+  element Unit { Unit }*,
+  element Constant { Constant }*,
+  element ComponentType { ComponentType }*,
+  element Component { Component }*,
+  attribute description { xsd:string }?
+Target = attribute component { xsd:string }
+Include = attribute file { xsd:string }
+Dimension =
+  attribute name { xsd:string },
+  [ ns_1:defaultValue = "0" ] attribute m { xsd:integer }?,
+  [ ns_1:defaultValue = "0" ] attribute l { xsd:integer }?,
+  [ ns_1:defaultValue = "0" ] attribute t { xsd:integer }?,
+  [ ns_1:defaultValue = "0" ] attribute i { xsd:integer }?,
+  [ ns_1:defaultValue = "0" ] attribute k { xsd:integer }?,
+  [ ns_1:defaultValue = "0" ] attribute n { xsd:integer }?
+Unit =
+  attribute symbol { xsd:string },
+  attribute dimension { xsd:string },
+  [ ns_1:defaultValue = "0" ]
+  attribute power {
+    
+    ## 
+    ##                         Some have asked whether fractional dimensions should be allowed. Disallowing it until needed...
+    ##                 
+    xsd:integer
+  }?,
+  [ ns_1:defaultValue = "1" ] attribute scale { xsd:float }?,
+  [ ns_1:defaultValue = "0" ] attribute offset { xsd:float }?
+DerivedParameter =
+  attribute name { xsd:string },
+  [ ns_1:defaultValue = "none" ] attribute dimension { xsd:string }?,
+  attribute value { xsd:string }
+
+## 
+##             A value for a physical quantity in LEMS, e.g. 20, -60.0mV, .05 per_ms or 5nA
+##         
+PhysicalQuantity =
+  xsd:string {
+    pattern = "-?([0-9]*(\.[0-9]+)?)([eE]-?[0-9]+)?[\s]*([_a-zA-Z0-9])*"
+  }
+Constant =
+  attribute name { xsd:string },
+  [ ns_1:defaultValue = "none" ] attribute dimension { xsd:string }?,
+  attribute value { PhysicalQuantity },
+  attribute description { xsd:string }?
+ComponentReference =
+  attribute name { xsd:string },
+  attribute type { xsd:string }
+Child =
+  attribute name { xsd:string },
+  attribute type { xsd:string }
+Attachments =
+  attribute name { xsd:string },
+  attribute type { xsd:string },
+  attribute description { xsd:string }?
+EventPort =
+  attribute name { xsd:string },
+  attribute direction { xsd:string },
+  # Should be enumeration...
+  attribute description { xsd:string }?
+Fixed =
+  attribute parameter { xsd:string },
+  attribute value { PhysicalQuantity },
+  attribute description { xsd:string }?
+Link =
+  attribute name { xsd:string },
+  attribute type { xsd:string },
+  attribute description { xsd:string }?
+Children =
+  attribute name { xsd:string },
+  attribute type { xsd:string }?,
+  attribute min { xsd:integer }?,
+  attribute max { xsd:integer }?
+Path =
+  attribute name { xsd:string },
+  attribute description { xsd:string }?
+Text =
+  attribute name { xsd:string },
+  attribute description { xsd:string }?
+StateVariable =
+  attribute name { xsd:string },
+  [ ns_1:defaultValue = "none" ] attribute dimension { xsd:string }?,
+  attribute exposure { xsd:string }?,
+  attribute description { xsd:string }?
+DerivedVariable =
+  attribute name { xsd:string },
+  [ ns_1:defaultValue = "none" ] attribute dimension { xsd:string }?,
+  attribute exposure { xsd:string }?,
+  attribute select { xsd:string }?,
+  # only one of these...
+  attribute value { xsd:string }?,
+  # only one of these...
+  attribute reduce { xsd:string }?,
+  # only if select present...
+  (attribute required { xsd:string }?)
+  # only if reduce present...
+  
+ConditionalDerivedVariable =
+  element Case { Case }+,
+  attribute name { xsd:string },
+  [ ns_1:defaultValue = "none" ] attribute dimension { xsd:string }?,
+  attribute exposure { xsd:string }?
+Case =
+  attribute condition { xsd:string },
+  attribute value { xsd:string }
+TimeDerivative =
+  attribute variable { xsd:string },
+  attribute value { xsd:string }
+OnStart = element StateAssignment { StateAssignment }+
+OnEntry = element StateAssignment { StateAssignment }+
+OnEvent =
+  element StateAssignment { StateAssignment }*,
+  element EventOut { EventOut }*,
+  attribute port { xsd:string }
+OnCondition =
+  element StateAssignment { StateAssignment }*,
+  element EventOut { EventOut }*,
+  element Transition { Transition }?,
+  # only on OnCondition inside Regime...
+  attribute test { xsd:string }
+EventOut = attribute port { xsd:string }
+StateAssignment =
+  attribute variable { xsd:string },
+  attribute value { xsd:string }
+Regime =
+  element TimeDerivative { TimeDerivative }*,
+  element OnEntry { OnStart }?,
+  element OnCondition { OnCondition }*,
+  attribute name { xsd:string },
+  attribute initial { TrueOrFalse }?
+TrueOrFalse = "true" | "false"
+Transition = attribute regime { xsd:string }
+Component =
+  element Component { Component }*,
+  attribute id { xsd:string },
+  attribute type { xsd:string },
+  attribute * { text }
+# ComponentType is used for component definitions containing parts which are currently specific to LEMS, e.g. Build/MultiInstantiate
+ComponentType =
+  element Property { Property }*,
+  element Parameter { Parameter }*,
+  # <xs:element name="DerivedParameter" type="DerivedParameter" minOccurs="0" maxOccurs="unbounded"/>
+  element Constant { Constant }*,
+  element Child { Child }*,
+  element Children { Children }*,
+  element Fixed { Fixed }*,
+  element Link { Link }*,
+  element ComponentReference { ComponentReference }*,
+  element Attachments { Attachments }*,
+  element EventPort { EventPort }*,
+  element Exposure { Exposure }*,
+  element Requirement { Requirement }*,
+  element Path { Path }*,
+  element Text { Text }*,
+  element Dynamics { Dynamics }*,
+  element Structure { Structure }?,
+  attribute name { xsd:string },
+  attribute extends { xsd:string }?,
+  attribute description { xsd:string }?
+# for Parameter, StateVariable etc.
+NamedDimensionalType =
+  attribute name { xsd:string },
+  [ ns_1:defaultValue = "none" ] attribute dimension { xsd:string }?,
+  attribute description { xsd:string }?
+Property =
+  # For language binding generators, so there will be a class of this name...
+  NamedDimensionalType
+Parameter =
+  # For language binding generators, so there will be a class of this name...
+  NamedDimensionalType
+Requirement =
+  # For language binding generators, so there will be a class of this name...
+  NamedDimensionalType
+Exposure =
+  # For language binding generators, so there will be a class of this name...
+  NamedDimensionalType
+Dynamics =
+  element StateVariable { StateVariable }*,
+  element DerivedVariable { DerivedVariable }*,
+  element ConditionalDerivedVariable { ConditionalDerivedVariable }*,
+  element TimeDerivative { TimeDerivative }*,
+  element OnStart { OnStart }?,
+  element OnEvent { OnEvent }*,
+  element OnCondition { OnCondition }*,
+  element Regime { Regime }*,
+  element KineticScheme { KineticScheme }?,
+  element Show { Show }*,
+  element Record { Record }*,
+  element Run { Run }*
+Structure =
+  element ChildInstance { ChildInstance }?,
+  element MultiInstantiate { MultiInstantiate }?,
+  element ForEach { ForEach }?,
+  element With { With }*,
+  element EventConnection { EventConnection }?
+ChildInstance = attribute component { xsd:string }
+MultiInstantiate =
+  attribute component { xsd:string },
+  attribute number { xsd:string }
+ForEach =
+  element MultiInstantiate { MultiInstantiate }?,
+  attribute instances { xsd:string },
+  attribute as { xsd:string }
+With =
+  attribute instance { xsd:string },
+  attribute as { xsd:string }
+EventConnection =
+  element Assign { Assign }?,
+  attribute from { xsd:string },
+  attribute to { xsd:string },
+  attribute sourcePort { xsd:string }?,
+  attribute targetPort { xsd:string }?,
+  attribute receiver { xsd:string }?,
+  attribute receiverContainer { xsd:string }?,
+  attribute delay { xsd:string }?
+Assign =
+  attribute property { xsd:string },
+  attribute value { xsd:string }
+# <xs:complexType name="OnCondition">
+# 
+#     <xs:sequence>
+#         <xs:element name="StateAssignment" type="StateAssignment" minOccurs="0" maxOccurs="unbounded"/>
+#         <xs:element name="EventOut" type="EventOut" minOccurs="0" maxOccurs="unbounded"/>
+#         <xs:element name="Transition" type="Transition" minOccurs="0" maxOccurs="1"/> 
+#     </xs:sequence>
+# 
+#     <xs:attribute name="test" type="xs:string" use="required"/>
+# 
+# </xs:complexType>
+KineticScheme =
+  attribute name { xsd:string },
+  attribute nodes { xsd:string },
+  attribute stateVariable { xsd:string },
+  attribute edges { xsd:string },
+  attribute edgeSource { xsd:string },
+  attribute edgeTarget { xsd:string },
+  attribute forwardRate { xsd:string },
+  attribute reverseRate { xsd:string }
+Show =
+  attribute src { xsd:string },
+  attribute scale { xsd:string }?
+Record =
+  attribute quantity { xsd:string },
+  attribute scale { xsd:string },
+  attribute color { xsd:string }
+Run =
+  attribute component { xsd:string },
+  attribute variable { xsd:string },
+  attribute increment { xsd:string },
+  attribute total { xsd:string }
