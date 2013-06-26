@@ -7,6 +7,8 @@ and rnc formats.
 ##Requirements
 `xsltproc` and `trang`.
 
-##Disclaimer
-This is provided on a best-effort basis, mainly for people using Emacs and
-nxml-mode to edit LEMS and NeuroML files. It's ugly, and it may eat your dog.
+--------------------
+
+Disclaimer: this is provided on a best-effort basis, mainly for people
+using Emacs and nxml-mode to edit LEMS and NeuroML files. It's ugly,
+and it may eat your dog.
