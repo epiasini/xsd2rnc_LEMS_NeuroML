@@ -1,4 +1,3 @@
-#! /usr/bin/env python
 # -*- coding: utf-8 -*-
 """
 Convert LEMS and NeuroML schema definitions from xsd to rng and rnc
@@ -6,9 +5,7 @@ formats.
 """
 import subprocess
 import os.path
-#from pkg_resources import resource_string
-
-xsdtorng_resource = "resources/XSDtoRNG.xsl"#resource_string(__name__, "resources/XSDtoRNG.xsl")
+from pkg_resources import resource_string
 
 def insert_string(in_string, separator, string_to_insert):
     first_half, second_half = in_string.split(separator, 1)
@@ -33,14 +30,21 @@ def main(xsd_filename, rnc_filename=None):
         rng_filename = os.path.splitext(os.path.split(xsd_filename)[1])[0] + ".rng"
         rnc_filename = os.path.splitext(os.path.split(xsd_filename)[1])[0] + ".rnc"
     else:
-        rng_filename = os.path.splitext(os.path.split(rnc_filename)[1])[0] + ".rng"
+        rng_filename = os.path.splitext(rnc_filename)[0] + ".rng"
 
-    # perform automatic xsl transformation: xsd -> rng
-    subprocess.call(["xsltproc -o {} {} {}".format(rng_filename,
-                                                   xsdtorng_resource,
-                                                   xsd_filename)],
-                    shell=True)
-
+    # load XSDtoRNG.xsl stylesheet as a resource string
+    xsdtorng_resource = resource_string(__name__, "resources/XSDtoRNG.xsl")
+    # perform automatic xsl transformation: xsd -> rng using xsltproc
+    # (note that the stylesheet contents are passed as a string
+    # through stdin)
+    p = subprocess.Popen(["xsltproc -o {} - {}".format(rng_filename,
+                                                       xsd_filename)],
+                         stdin=subprocess.PIPE,
+                         stdout=subprocess.PIPE,
+                         stderr=subprocess.STDOUT,
+                         shell=True)
+    xsltproc_stdout = p.communicate(input=xsdtorng_resource)
+    print(xsltproc_stdout[0])
     # patch rng file by adding the declaration of an xsi:schemaLocation attribute
     if "NeuroML" in xsd_filename:
         definition_to_modify = "NeuroMLDocument"
@@ -64,20 +68,3 @@ def main(xsd_filename, rnc_filename=None):
     subprocess.call(["trang {} {}".format(rng_filename,
                                           rnc_filename)],
                     shell=True)
-
-
-
-if __name__=="__main__":
-    import argparse
-    # create the top-level parser
-    parser = argparse.ArgumentParser(description=main.__doc__)
-    parser.add_argument("xsdfile",
-                        help="input xsd schema file (eg LEMS_v0.7.xsd)")
-    parser.add_argument("rncfile",
-                        help="output rnc schema path (eg LEMS_v0.7.rnc). Must have .rnc extension.")
-    # parse the args
-    args = parser.parse_args()
-    xsd_filename = args.xsdfile
-
-    # call main function
-    main(xsd_filename)

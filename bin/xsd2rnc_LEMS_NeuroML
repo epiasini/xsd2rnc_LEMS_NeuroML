@@ -1,0 +1,19 @@
+#! /usr/bin/env python
+# -*- mode: Python; coding: utf-8 -*-
+import argparse
+
+from xsd2rnc_LEMS_NeuroML import convert
+
+# create the top-level parser
+parser = argparse.ArgumentParser(description=convert.main.__doc__)
+parser.add_argument("xsdfile",
+                    help="input xsd schema file (eg LEMS_v0.7.xsd)")
+parser.add_argument("-o", "--output",
+                    help="output rnc schema path (eg LEMS_v0.7.rnc). Must have .rnc extension.")
+# parse the args
+args = parser.parse_args()
+xsd_filename = args.xsdfile
+rnc_filename = args.output
+
+# call main function
+convert.main(xsd_filename, rnc_filename)
