@@ -6,6 +6,9 @@ formats.
 """
 import subprocess
 import os.path
+#from pkg_resources import resource_string
+
+xsdtorng_resource = "resources/XSDtoRNG.xsl"#resource_string(__name__, "resources/XSDtoRNG.xsl")
 
 def insert_string(in_string, separator, string_to_insert):
     first_half, second_half = in_string.split(separator, 1)
@@ -24,14 +27,18 @@ def insert_string_in_file(filename, separator, string_to_insert):
     with open(filename, "w") as f:
         f.write(out_string)
 
-def main(xsd_filename):
+def main(xsd_filename, rnc_filename=None):
     """convert LEMS/NeuroML xsd schema to rng and rnc formats"""
-    rng_filename = os.path.splitext(os.path.split(xsd_filename)[1])[0] + ".rng"
-    rnc_filename = os.path.splitext(os.path.split(xsd_filename)[1])[0] + ".rnc"
+    if not rnc_filename:
+        rng_filename = os.path.splitext(os.path.split(xsd_filename)[1])[0] + ".rng"
+        rnc_filename = os.path.splitext(os.path.split(xsd_filename)[1])[0] + ".rnc"
+    else:
+        rng_filename = os.path.splitext(os.path.split(rnc_filename)[1])[0] + ".rng"
 
     # perform automatic xsl transformation: xsd -> rng
-    subprocess.call(["xsltproc -o {} XSDtoRNG.xsl {}".format(rng_filename,
-                                                             xsd_filename)],
+    subprocess.call(["xsltproc -o {} {} {}".format(rng_filename,
+                                                   xsdtorng_resource,
+                                                   xsd_filename)],
                     shell=True)
 
     # patch rng file by adding the declaration of an xsi:schemaLocation attribute
@@ -66,6 +73,8 @@ if __name__=="__main__":
     parser = argparse.ArgumentParser(description=main.__doc__)
     parser.add_argument("xsdfile",
                         help="input xsd schema file (eg LEMS_v0.7.xsd)")
+    parser.add_argument("rncfile",
+                        help="output rnc schema path (eg LEMS_v0.7.rnc). Must have .rnc extension.")
     # parse the args
     args = parser.parse_args()
     xsd_filename = args.xsdfile
